@@ -1,4 +1,5 @@
 ﻿import asyncio
+import json
 import httpx
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
@@ -50,7 +51,6 @@ async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
             resultado = response.json()
         else:
             raise ValueError(f"Tool desconhecida: {name!r}")
-    import json
     return [types.TextContent(type="text", text=json.dumps(resultado, ensure_ascii=False))]
 
 async def main():
