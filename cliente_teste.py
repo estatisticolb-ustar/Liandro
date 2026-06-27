@@ -1,4 +1,4 @@
-﻿import asyncio
+import asyncio
 import json
 import sys
 from pathlib import Path
@@ -17,17 +17,12 @@ async def main():
         async with ClientSession(read, write) as session:
             await session.initialize()
 
-            tools_resp = await session.list_tools()
-            print("=== Tools disponíveis ===")
-            for tool in tools_resp.tools:
-                print(f"  • {tool.name}: {tool.description}")
-            print()
+            envelopes = []
 
             titulos = ["Estudar MCP", "Implementar API 4.1", "Revisar FastAPI"]
-            print("=== Criando tarefas ===")
             for titulo in titulos:
                 result = await session.call_tool("criar_tarefa", {"titulo": titulo})
-                envelope = {
+                envelopes.append({
                     "tool": "criar_tarefa",
                     "arguments": {"titulo": titulo},
                     "content": [
@@ -36,13 +31,10 @@ async def main():
                         if hasattr(c, "text")
                     ],
                     "isError": result.isError,
-                }
-                print(json.dumps(envelope, ensure_ascii=False, indent=2))
-                print()
+                })
 
-            print("=== Listando tarefas ===")
             result = await session.call_tool("listar_tarefas", {})
-            envelope = {
+            envelopes.append({
                 "tool": "listar_tarefas",
                 "arguments": {},
                 "content": [
@@ -51,8 +43,9 @@ async def main():
                     if hasattr(c, "text")
                 ],
                 "isError": result.isError,
-            }
-            print(json.dumps(envelope, ensure_ascii=False, indent=2))
+            })
+
+            print(json.dumps(envelopes, ensure_ascii=False, indent=2))
 
 if __name__ == "__main__":
     asyncio.run(main())
