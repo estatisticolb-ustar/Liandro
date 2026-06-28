@@ -17,35 +17,23 @@ async def main():
         async with ClientSession(read, write) as session:
             await session.initialize()
 
-            envelopes = []
+            tools_resp = await session.list_tools()
+            tools = [t.name for t in tools_resp.tools]
 
-            titulos = ["Estudar MCP", "Implementar API 4.1", "Revisar FastAPI"]
-            for titulo in titulos:
-                result = await session.call_tool("criar_tarefa", {"titulo": titulo})
-                envelopes.append({
-                    "tool": "criar_tarefa",
-                    "arguments": {"titulo": titulo},
-                    "content": [
-                        {"type": c.type, "text": c.text}
-                        for c in result.content
-                        if hasattr(c, "text")
-                    ],
-                    "isError": result.isError,
-                })
+            criar_result = await session.call_tool("criar_tarefa", {"titulo": "tarefa via mcp"})
+            criar_text = criar_result.content[0].text if criar_result.content else "{}"
+            criar_resultado = json.loads(criar_text)
 
-            result = await session.call_tool("listar_tarefas", {})
-            envelopes.append({
-                "tool": "listar_tarefas",
-                "arguments": {},
-                "content": [
-                    {"type": c.type, "text": c.text}
-                    for c in result.content
-                    if hasattr(c, "text")
-                ],
-                "isError": result.isError,
-            })
+            listar_result = await session.call_tool("listar_tarefas", {})
+            listar_text = listar_result.content[0].text if listar_result.content else "[]"
+            listar_resultado = json.loads(listar_text)
 
-            print(json.dumps(envelopes, ensure_ascii=False, indent=2))
+            saida = {
+                "tools": tools,
+                "criar_resultado": criar_resultado,
+                "listar_resultado": listar_resultado,
+            }
+            print(json.dumps(saida, ensure_ascii=False, indent=2))
 
 if __name__ == "__main__":
     asyncio.run(main())
